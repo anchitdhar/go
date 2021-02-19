@@ -138,7 +138,7 @@ func TestUpdateProduct(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/product/1", nil)
 	response := executeRequest(req)
 	var originalProduct map[string]interface{}
-	body, __ := ioutil.ReadAll(response.Body)
+	body, _ := ioutil.ReadAll(response.Body)
 	json.Unmarshal(body, &originalProduct)
 
 	var jsonStr = []byte(`{"name":"test product - updated - name","price":11.22}`)
@@ -163,4 +163,22 @@ func TestUpdateProduct(t *testing.T) {
 	if m["price"] == originalProduct["price"] {
 		t.Errorf("Expected the price to change from '%v' to '%v'. Got '%v'", originalProduct["price"], m["price"], m["price"])
 	}
+}
+
+func TestDeleteProduct(t *testing.T) {
+	clearTable()
+	addProducts(1)
+
+	req, _ := http.NewRequest("GET", "/product/1", nil)
+	response := executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req1, _ := http.NewRequest("DELETE", "/product/1", nil)
+	response = executeRequest(req1)
+
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req2, _ := http.NewRequest("GET", "/product/1", nil)
+	response = executeRequest(req2)
+	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
